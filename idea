@@ -1,0 +1,27 @@
+fast graph processing: c, ocaml, clisp?
+daemonize? if so, look for new directories - via kqueue?
+
+Well don't overuse graph libs, solve immediate problem instead.
+Using C or Ruby or whatever.
+
+The current problem is:
+portmaster -L is too slow (~12s on nebula, 16s when not in the cache).
+Speed up!
+
+Algo: for each package in /var/db/pkg/ check version in ports index.
+
+Looks like checking unpacked dir for a specific port doesn't buy us
+anything, as there's no guarantee exact version (with patchlevel etc)
+will occur anywhere there.
+
+Solution: 
+A. Binary search of sorted ports index.
+B. Brute grep for the line starting with package in the index.
+
+Simply check if A is reasonably faster for the whole set of installed pkgs.
+
+
+Yeah actually I need reverse index, mapping origin port to port name + ver. 
+Sorted or not.
+Thus I created revindex tool in C to quickly generate it from port index.
+
