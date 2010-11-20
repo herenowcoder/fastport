@@ -3,7 +3,7 @@
 Index='/usr/ports/INDEX-8'
 RevIndex='/var/tmp/ports_revindex'
 
-[ $RevIndex -nt $Index ] || revindex <$Index | sort > $RevIndex
+[ $RevIndex -nt $Index ] || ./revindex <$Index | sort -t'|' -k1 > $RevIndex
 
 strip_version() {
     echo $1 | sed -E 's/(.+)-.+/\1/'
