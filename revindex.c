@@ -19,7 +19,7 @@ int main() {
     d3 = strchr(d2, '|');
     if (d3 == NULL) { d2 = d3; goto skip; }
     *d3 = '\0';
-    printf("%s|%s\n", d2, buf);
+    printf("%s %s\n", d2, buf);
   skip:
     if (! memchr(d2, '\n', d2-buf+n)) {
       while ((c = getc(stdin)) && c != '\n') ;
