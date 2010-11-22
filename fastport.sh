@@ -37,4 +37,4 @@ check_all_pkgs() {
     done
 }
 
-[ "$1" = "-a" ] && check_all_pkgs
+[ "$1" = "-u" ] && check_all_pkgs
