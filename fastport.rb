@@ -1,10 +1,13 @@
 #!/usr/bin/env ruby
 
-$: << '.'
-require 'bsearch'
-
 Index='/usr/ports/INDEX-8'
 RevIndex='/var/tmp/ports_revindex'
+
+Libexec_dir='/usr/local/libexec/fastport'
+ENV['PATH'] += ":.:#{Libexec_dir}"
+$LOAD_PATH << '.' << Libexec_dir
+require 'bsearch'
+
 
 module Enumerable
   def second; drop(1).first end
@@ -12,7 +15,7 @@ end
 
 def mk_revindex 
   unless File.exists?(RevIndex) and File.mtime(RevIndex) > File.mtime(Index)
-    %x[./revindex < #{Index} | sort > #{RevIndex}]
+    %x[revindex < #{Index} | sort -k1 > #{RevIndex}]
   end
   open(RevIndex)
 end
