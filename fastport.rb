@@ -63,7 +63,8 @@ end
 
 if $0 == __FILE__
   case ARGV.first
+    when '-u' then check_all_pkgs
+    when '-l' then puts lookup_revindex ARGV.second
     when '-t' then test_revindex
-    when '-a' then check_all_pkgs
   end
 end
