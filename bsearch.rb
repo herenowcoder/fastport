@@ -13,11 +13,11 @@ def bsearch f, &compare
       return :not_found
     end
     prev_range = [p1,p2]
-    f.seek(p1 + ((p2-p1)>>1))
+    f.seek(p1 + ((p2-p1).div 2))
     f.gets # scratch this line remainder
     p = f.pos
     line = f.gets
-    return :not_found unless line
+    return loop.call *prev_range if line.nil? 
     line.chomp!
     r = compare.call line
     if r < 0
@@ -31,6 +31,6 @@ def bsearch f, &compare
   loop.call 0, f.size 
 end
 
-def bsearch1 f, term, separator
-  bsearch(f) {|x| term <=> x.split(separator).first}
+def bsearch_index f, port_path
+  bsearch(f) {|x| port_path <=> x.split(' ').first}
 end

@@ -19,13 +19,13 @@ end
 
 def lookup_revindex pkg_origin
   $idx ||= mk_revindex
-  bsearch1 $idx, pkg_origin, '|'
+  bsearch_index $idx, pkg_origin
 end
 
 def test_revindex
   open(RevIndex) do |f|
     while (l = f.gets) do
-      pkg_origin = l.split('|').first
+      pkg_origin = l.split(' ').first
       r = lookup_revindex pkg_origin
       if r==:not_found
         puts "#{pkg_origin}: not_found"
@@ -51,7 +51,7 @@ def get_version pkg_with_ver
 end
 
 def check_pkg pkg
-  idx_ver = get_version(lookup_revindex(pkg_origin pkg).split('|').second)
+  idx_ver = get_version(lookup_revindex(pkg_origin pkg).split(' ').second)
   if get_version(pkg) != idx_ver
     puts "installed: #{pkg}, index has: #{idx_ver}"
   end
