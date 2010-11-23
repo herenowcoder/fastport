@@ -25,3 +25,15 @@ Yeah actually I need reverse index, mapping origin port to port name + ver.
 Sorted or not.
 Thus I created revindex tool in C to quickly generate it from port index.
 
+Yeah well looks like INDEX file _is_ already in a needed order - it's
+sorded by a second field, but in a way that when the port path is
+category/subdir then it's first sorted by category and then by subdir,
+so eg. 'x11 zenity' < 'x11-wm xfce' but 'x11/zenity' > 'x11-wm/xfce'.
+This difference made my previous attempts to use orig INDEX buggy.
+Now, after I have valid seeking bsearch implementation, I can use
+INDEX directly.
+
+Btw, there's also "portmaster --index -L" solution, runs 1.5s now
+(only w/ port fs mounted rw, bleh).
+
+There's also "pkg_version -vl '<'", runs 8-13s.
