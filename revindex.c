@@ -2,11 +2,11 @@
 #include <stdio.h>
 
 int main() {
-  const int n=200;
-  char buf[n];
+  char *buf;
   char c, *d2, *d3;
-  
-  while (fgets(buf, n, stdin)) {
+  size_t n;
+
+  while ((buf = fgetln(stdin, &n))) {
     d2 = strchr(buf, '|');
     if (d2 == NULL) goto skip;
     *d2 = '\0';
