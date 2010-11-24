@@ -1,7 +1,7 @@
-CFLAGS=		-Wall -O2 -pipe
+CFLAGS=		-std=c99 -Wall -O2 -pipe -g
 LDFLAGS= 	
 
-dummy:		
+bsearch:	bsearch.c
 
 install:	
 		install -d /usr/local/libexec/fastport/
