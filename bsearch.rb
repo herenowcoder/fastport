@@ -32,6 +32,18 @@ def bsearch f, &compare
   loop.call 0, f.size 
 end
 
-def bsearch_index f, port_path
-  bsearch(f) {|x| port_path <=> x.split(' ').first}
+
+def portpath_from_indexline x
+  i = x.index('|')
+  i = x.index('/',i+1)
+  i = x.index('/',i+1)
+  i = x.index('/',i+1)
+  j = x.index('|',i+1)
+  x[i+1...j]
+end
+
+def bsearch_index f, portpath
+  bsearch(f) do |x|
+    portpath.sub('/',' ') <=> portpath_from_indexline(x).sub('/',' ')
+  end
 end

@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
 Index='/usr/ports/INDEX-8'
-RevIndex='/var/tmp/ports_revindex'
 
 Libexec_dir='/usr/local/libexec/fastport'
 ENV['PATH'] += ":.:#{Libexec_dir}"
@@ -13,23 +12,17 @@ module Enumerable
   def second; drop(1).first end
 end
 
-def mk_revindex 
-  unless File.exists?(RevIndex) and File.mtime(RevIndex) > File.mtime(Index)
-    %x[revindex < #{Index} | sort -k1 > #{RevIndex}]
-  end
-  open(RevIndex)
+
+def lookup_index pkg_origin
+  $idx ||= open(Index)
+  bsearch_index($idx, pkg_origin)
 end
 
-def lookup_revindex pkg_origin
-  $idx ||= mk_revindex
-  bsearch_index $idx, pkg_origin
-end
-
-def test_revindex
-  open(RevIndex) do |f|
+def test_index
+  open(Index) do |f|
     while (l = f.gets) do
-      pkg_origin = l.split(' ').first
-      r = lookup_revindex pkg_origin
+      pkg_origin = portpath_from_indexline l
+      r = lookup_index pkg_origin
       if r==:not_found
         puts "#{pkg_origin}: not_found"
       else
@@ -54,7 +47,7 @@ def get_version pkg_with_ver
 end
 
 def check_pkg pkg
-  idx_ver = get_version(lookup_revindex(pkg_origin pkg).split(' ').second)
+  idx_ver = get_version(lookup_index(pkg_origin pkg).split('|').first)
   if get_version(pkg) != idx_ver
     puts "installed: #{pkg}, index has: #{idx_ver}"
   end
@@ -67,7 +60,7 @@ end
 if $0 == __FILE__
   case ARGV.first
     when '-u' then check_all_pkgs
-    when '-l' then puts lookup_revindex ARGV.second
-    when '-t' then test_revindex
+    when '-l' then puts lookup_index ARGV.second
+    when '-t' then test_index
   end
 end
