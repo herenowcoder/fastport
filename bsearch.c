@@ -67,9 +67,7 @@ static int compare_index_entry(const char *key, const char *entry, size_t len)
   buf[portpath.n] = '\0';
   char *delim = strchr(buf, '/');
   *delim = ' ';
-  int r = strcmp(key, buf);
-  D("comparator key=\"%s\" var=\"%s\" r=%d", key, buf, r);
-  return r;
+  return strcmp(key, buf);
 }
 
 
@@ -84,7 +82,6 @@ char * bsearch_index(const char *index_mem, size_t index_size,
   mem = index_mem;
   memsize = index_size;
   comparator = &compare_index_entry;
-  D("bsearch setup: key=\"%s\"", key);
   return bsearch_loop(0L, index_size);
 }
 
