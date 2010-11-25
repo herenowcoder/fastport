@@ -4,64 +4,66 @@
 
 #define D(_format, ...) fprintf(stderr, _format "\n", __VA_ARGS__)
 
-typedef int (*compare_fptr)(const char *key, const char *var);
+typedef int (*compare_fptr)(const char *key, const char *var, size_t len);
 
-static FILE *f;
+static const char *mem;
+static size_t memsize;
 static const char *key;
 static compare_fptr comparator = NULL;
-static char *line;
-static size_t linelen = 0;
 
 
-static char * bsearch_loop(long p1, long p2, long *pprev) {
-  D("loop p1=%ld p2=%ld", p1, p2);
-  if (!(pprev && pprev[0] == p1 && pprev[1] == p2)) {
-    long pprev1[2];
-    pprev1[0] = p1; pprev1[1] = p2;
-    fseek(f, p1 + ((p2-p1) >> 1), SEEK_SET);
-    fgetln(f, &linelen);
-    long p = ftell(f);
-    line = fgetln(f, &linelen);
-    if (line == NULL) return bsearch_loop(p1, p2, pprev1);
-    int r = comparator(key, line);
-    if (r < 0)
-      bsearch_loop(p1, p, pprev1);
-    else if (r > 0)
-      bsearch_loop(ftell(f), p2, pprev1);
-    else
-      return strndup(line, linelen);
-  } else {
-    fseek(f, p1, SEEK_SET);
-    while ((line = fgetln(f, &linelen)) != NULL) {
-      if (comparator(key, line) == 0) return strndup(line, linelen);
-    }
-    return NULL;
-  }
+static char * bsearch_loop(long p1, long p2) {
+  if (p1 >= p2) return NULL;
+  long phalf, p, pn, linesize;
+  const char *lowerb, *upperb;
+  int r;
+  phalf = p1 + (p2 - p1)/2;
+  lowerb = memrchr(mem + p1, '\n', phalf - p1);
+  p = lowerb ? lowerb - mem + 1 : p1;
+  upperb = memchr(mem + phalf, '\n', memsize - phalf);
+  if (!upperb) exit(2);
+  pn = upperb - mem + 1;
+  linesize = pn - p;
+  r = comparator(key, mem + p, linesize);
+  if (r < 0)
+    return bsearch_loop(p1, p);
+  else if (r > 0)
+    return bsearch_loop(pn, p2);
+  else
+    return strndup(mem + p, linesize);
 }
 
 
 struct str_range {
-  char *str;
+  const char *s;
   size_t n;
 };
 
-static struct str_range portpath_from_indexline(const char *s) {
-  char *i, *j;
-  i = strchr(s, '|');
-  i = strchr(++i, '/');
-  i = strchr(++i, '/');
-  i = strchr(++i, '/');
-  j = strchr(++i, '|');
+#define CHK(expr) if(!(expr)) goto err;
+
+static struct str_range portpath_from_indexline(const char *s, size_t len) 
+{
+  const char *i, *j;
   struct str_range r;
-  r.str = i;
+  CHK(i = memchr(s, '|', len));
+  CHK(i = memchr(++i, '/', len-(i-s)));
+  CHK(i = memchr(++i, '/', len-(i-s)));
+  CHK(i = memchr(++i, '/', len-(i-s)));
+  CHK(j = memchr(++i, '|', len-(i-s)));
+  r.s = i;
   r.n = j-i;
+  return r;
+ err:
+  r.s = NULL; r.n = 0;
   return r;
 }
 
-static int compare_index_entry(const char *key, const char *entry) {
-  const struct str_range portpath = portpath_from_indexline(entry);
+static int compare_index_entry(const char *key, const char *entry, size_t len)
+{
+  const struct str_range portpath = portpath_from_indexline(entry, len);
+  if (!portpath.s) exit(3);
   char buf[portpath.n+1];
-  strncpy(buf, portpath.str, portpath.n);
+  strncpy(buf, portpath.s, portpath.n);
   buf[portpath.n] = '\0';
   char *delim = strchr(buf, '/');
   *delim = ' ';
@@ -71,22 +73,36 @@ static int compare_index_entry(const char *key, const char *entry) {
 }
 
 
-char * bsearch_index(FILE *index_f, const char *index_key) {
+char * bsearch_index(const char *index_mem, size_t index_size, 
+		     const char *index_key) 
+{
   char keybuf[strlen(index_key)+1];
   strcpy(keybuf, index_key);
   char *delim = strchr(keybuf, '/');
-  *delim = ' ';
+  if (delim) *delim = ' ';
   key = keybuf;
-  f = index_f;
+  mem = index_mem;
+  memsize = index_size;
   comparator = &compare_index_entry;
   D("bsearch setup: key=\"%s\"", key);
-  fseek(f, 0L, SEEK_END);
-  return bsearch_loop(0L, ftell(f), NULL);
+  return bsearch_loop(0L, index_size);
 }
 
-int main(int argc, const char **argv) {
-  char *r = bsearch_index(fopen("/usr/ports/INDEX-8", "r"), argv[1]);
-  if (r) puts(r);
+#include <sys/mman.h>
+#include <sys/stat.h>
+
+int main(int argc, char **argv) {
+  FILE *f = fopen("/usr/ports/INDEX-8", "r");
+  int fd = fileno(f);
+  struct stat st;
+  fstat(fd, &st);
+  char *mem = mmap(0, st.st_size, PROT_READ, 0, fd, 0);
+  char *key = argc>1 ? argv[1] : "";
+  char *r = bsearch_index(mem, st.st_size, key);
+  if (r) fputs(r, stdout);
+  int end = r ? 0 : 1;
   free(r);
-  return r ? 0 : 1;
+  munmap(mem, st.st_size);
+  fclose(f);
+  return end;
 }
