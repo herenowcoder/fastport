@@ -11,15 +11,15 @@ static size_t memsize;
 static const char *key;
 static compare_fptr comparator = NULL;
 
-struct str_range {
+struct strsub {
   const char *s;
   size_t n;
 };
 
-const struct str_range NULL_RANGE = {.s=NULL, .n=0};
+const struct strsub NULL_RANGE = {.s=NULL, .n=0};
 
 
-static struct str_range bsearch_loop(long p1, long p2) {
+static struct strsub bsearch_loop(long p1, long p2) {
   if (p1 >= p2) return NULL_RANGE;
   long phalf, p, pn, linesize;
   const char *lowerb, *upperb;
@@ -37,13 +37,13 @@ static struct str_range bsearch_loop(long p1, long p2) {
   else if (r > 0)
     return bsearch_loop(pn, p2);
   else
-    return (struct str_range){.s = mem + p, .n = linesize};
+    return (struct strsub){.s = mem + p, .n = linesize};
 }
 
 
 #define CHK(expr) if(!(expr)) goto err;
 
-static struct str_range portpath_from_indexline(const char *s, size_t len) 
+static struct strsub portpath_from_indexline(const char *s, size_t len) 
 {
   const char *i, *j;
   CHK(i = memchr(s, '|', len));
@@ -51,14 +51,14 @@ static struct str_range portpath_from_indexline(const char *s, size_t len)
   CHK(i = memchr(++i, '/', len-(i-s)));
   CHK(i = memchr(++i, '/', len-(i-s)));
   CHK(j = memchr(++i, '|', len-(i-s)));
-  return (struct str_range){.s = i, .n = j-i};
+  return (struct strsub){.s = i, .n = j-i};
  err:
   return NULL_RANGE;
 }
 
 static int compare_index_entry(const char *key, const char *entry, size_t len)
 {
-  const struct str_range portpath = portpath_from_indexline(entry, len);
+  const struct strsub portpath = portpath_from_indexline(entry, len);
   if (!portpath.s) exit(3);
   char buf[portpath.n+1];
   strncpy(buf, portpath.s, portpath.n);
@@ -69,8 +69,8 @@ static int compare_index_entry(const char *key, const char *entry, size_t len)
 }
 
 
-struct str_range bsearch_index(const char *index_mem, size_t index_size, 
-			       const char *index_key) 
+struct strsub bsearch_index(const char *index_mem, size_t index_size, 
+			    const char *index_key) 
 {
   char keybuf[strlen(index_key)+1];
   strcpy(keybuf, index_key);
@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
   size_t linelen;
   while ((line = fgetln(stdin, &linelen))) {
     line[linelen-1] = '\0';
-    struct str_range r = bsearch_index(mem, st.st_size, line);
+    struct strsub r = bsearch_index(mem, st.st_size, line);
     if (r.s) {
       char buf[r.n+1];
       strncpy(buf, r.s, r.n);
