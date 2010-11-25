@@ -5,7 +5,6 @@ Index='/usr/ports/INDEX-8'
 Libexec_dir='/usr/local/libexec/fastport'
 ENV['PATH'] += ":.:#{Libexec_dir}"
 $LOAD_PATH << '.' << Libexec_dir
-require 'bsearch'
 
 
 module Enumerable
@@ -17,6 +16,15 @@ def lookup_index pkg_origin
   $idx_prog ||= open("|bsearch","a+")
   $idx_prog.puts pkg_origin
   $idx_prog.gets
+end
+
+def portpath_from_indexline x
+  i = x.index('|')
+  i = x.index('/',i+1)
+  i = x.index('/',i+1)
+  i = x.index('/',i+1)
+  j = x.index('|',i+1)
+  x[i+1...j]
 end
 
 def test_index
