@@ -1,0 +1,27 @@
+binary search by line, loading the whole revindex into memory:
+bsearch_by_line% time ./fastport.rb -t >/dev/null
+./fastport.rb -t > /dev/null  0.68s user 0.04s system 96% cpu 0.740 total
+./fastport.rb -t > /dev/null  0.73s user 0.04s system 99% cpu 0.771 total
+
+file-seeking version:
+master% time ./fastport.rb -t >/dev/null
+./fastport.rb -t > /dev/null  3.35s user 2.28s system 98% cpu 5.732 total
+./fastport.rb -t > /dev/null  3.03s user 2.52s system 97% cpu 5.670 total
+
+orig index file-seeking version:
+no_revindex% time ./fastport.rb -t >/dev/null
+./fastport.rb -t > /dev/null  7.72s user 2.87s system 96% cpu 10.981 total
+./fastport.rb -t > /dev/null  7.46s user 2.94s system 97% cpu 10.697 total
+
+ruby-ffi mmap version:
+mmap_ruby% time ./fastport.rb -t >/dev/null
+./fastport.rb -t > /dev/null  225.62s user 0.36s system 96% cpu 3:53.25 total
+bleh..
+
+C-mmap version with io-loop and ruby driver:
+mmap_c% time ./fastport.rb -t >/dev/null
+./fastport.rb -t > /dev/null  0.57s user 0.34s system 46% cpu 1.963 total
+./fastport.rb -t > /dev/null  0.49s user 0.38s system 46% cpu 1.870 total
+./fastport.rb -t > /dev/null  0.58s user 0.31s system 46% cpu 1.930 total
+Much better!
+
