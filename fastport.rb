@@ -14,8 +14,9 @@ end
 
 
 def lookup_index pkg_origin
-  $idx ||= open(Index)
-  bsearch_index($idx, pkg_origin)
+  $idx_prog ||= open("|bsearch","a+")
+  $idx_prog.puts pkg_origin
+  $idx_prog.gets
 end
 
 def test_index

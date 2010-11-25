@@ -94,12 +94,16 @@ int main(int argc, char **argv) {
   struct stat st;
   fstat(fd, &st);
   char *mem = mmap(0, st.st_size, PROT_READ, 0, fd, 0);
-  char *key = argc>1 ? argv[1] : "";
-  char *r = bsearch_index(mem, st.st_size, key);
-  if (r) fputs(r, stdout);
-  int end = r ? 0 : 1;
-  free(r);
+  char *line;
+  size_t linelen;
+  while ((line = fgetln(stdin, &linelen))) {
+    line[linelen-1] = '\0';
+    char *r = bsearch_index(mem, st.st_size, line);
+    fputs(r ? r : "NOT_FOUND\n", stdout);
+    free(r);
+    fflush(stdout);
+  }
   munmap(mem, st.st_size);
   fclose(f);
-  return end;
+  return 0;
 }
