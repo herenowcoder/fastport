@@ -11,9 +11,16 @@ static size_t memsize;
 static const char *key;
 static compare_fptr comparator = NULL;
 
+struct str_range {
+  const char *s;
+  size_t n;
+};
 
-static char * bsearch_loop(long p1, long p2) {
-  if (p1 >= p2) return NULL;
+const struct str_range NULL_RANGE = {.s=NULL, .n=0};
+
+
+static struct str_range bsearch_loop(long p1, long p2) {
+  if (p1 >= p2) return NULL_RANGE;
   long phalf, p, pn, linesize;
   const char *lowerb, *upperb;
   int r;
@@ -30,32 +37,23 @@ static char * bsearch_loop(long p1, long p2) {
   else if (r > 0)
     return bsearch_loop(pn, p2);
   else
-    return strndup(mem + p, linesize);
+    return (struct str_range){.s = mem + p, .n = linesize};
 }
 
-
-struct str_range {
-  const char *s;
-  size_t n;
-};
 
 #define CHK(expr) if(!(expr)) goto err;
 
 static struct str_range portpath_from_indexline(const char *s, size_t len) 
 {
   const char *i, *j;
-  struct str_range r;
   CHK(i = memchr(s, '|', len));
   CHK(i = memchr(++i, '/', len-(i-s)));
   CHK(i = memchr(++i, '/', len-(i-s)));
   CHK(i = memchr(++i, '/', len-(i-s)));
   CHK(j = memchr(++i, '|', len-(i-s)));
-  r.s = i;
-  r.n = j-i;
-  return r;
+  return (struct str_range){.s = i, .n = j-i};
  err:
-  r.s = NULL; r.n = 0;
-  return r;
+  return NULL_RANGE;
 }
 
 static int compare_index_entry(const char *key, const char *entry, size_t len)
@@ -71,8 +69,8 @@ static int compare_index_entry(const char *key, const char *entry, size_t len)
 }
 
 
-char * bsearch_index(const char *index_mem, size_t index_size, 
-		     const char *index_key) 
+struct str_range bsearch_index(const char *index_mem, size_t index_size, 
+			       const char *index_key) 
 {
   char keybuf[strlen(index_key)+1];
   strcpy(keybuf, index_key);
@@ -98,9 +96,14 @@ int main(int argc, char **argv) {
   size_t linelen;
   while ((line = fgetln(stdin, &linelen))) {
     line[linelen-1] = '\0';
-    char *r = bsearch_index(mem, st.st_size, line);
-    fputs(r ? r : "NOT_FOUND\n", stdout);
-    free(r);
+    struct str_range r = bsearch_index(mem, st.st_size, line);
+    if (r.s) {
+      char buf[r.n+1];
+      strncpy(buf, r.s, r.n);
+      buf[r.n] = '\0';
+      fputs(buf, stdout);
+    } else
+      fputs("NOT_FOUND\n", stdout);
     fflush(stdout);
   }
   munmap(mem, st.st_size);
