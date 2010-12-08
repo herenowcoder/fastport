@@ -1,0 +1,26 @@
+
+fastport - utility for fast operations on FreeBSD ports index
+========
+
+This program takes an avantage of ports index file being sorted by a
+port path and allows speedy binary search in it. Its main purpose is to
+quickly check which ports may need upgrading (using -u switch). It is
+done by scanning the installed packages in /var/db/pkg, extracting the
+port path and binary-search the entry in the index file.
+
+The other implemented mode of operation is to simply return a record
+from ports index for a given port path (using -l switch).
+
+
+Summary of usage:
+
+fastport -u		Show ports index entries whose versions differ from
+	 		installed ones - they are candidates for upgrade.
+fastport -l port_path	Show ports index entry for a port_path given as 
+	    		'category/port_name'.
+fastport -t		This is a regression test and a timing mesasure: 
+	 		return result for every index entry found by a binary
+			search. Should effectively give exactly the same output
+			as the ports index file.
+
+Enjoy !
