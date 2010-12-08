@@ -1,3 +1,0 @@
-When libexec/fastport/ dir exists but is empty, revindex binary don't
-get run and the zero-sized revindex is produced as a result of the
-pipe.
