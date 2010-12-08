@@ -46,7 +46,7 @@ def pkg_origin pkg
     xs = []; 
     5.times {xs << f.read}
     xs
-  end
+  end \
     .map{|x| x =~ /ORIGIN:(.+)/; $1}.compact.first
   # todo: write a transformer such as 'take first + map', or 'breaking-fold'
 end
