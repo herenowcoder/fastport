@@ -11,6 +11,9 @@ port path and binary-search the entry in the index file.
 The other implemented mode of operation is to simply return a record
 from ports index for a given port path (using -l switch).
 
+You can find the motivation behind this little piece of code in the
+`idea' file.
+
 
 Summary of usage:
 
