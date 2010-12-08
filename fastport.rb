@@ -32,7 +32,7 @@ def test_index
     while (l = f.gets) do
       pkg_origin = portpath_from_indexline l
       r = lookup_index pkg_origin
-      if r==:not_found
+      if r=='NOT_FOUND'
         puts "#{pkg_origin}: not_found"
       else
         puts r
