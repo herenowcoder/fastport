@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sysexits.h>
+#include <err.h>
 
 #define D(_format, ...) fprintf(stderr, _format "\n", __VA_ARGS__)
 
@@ -88,7 +89,13 @@ struct strsub bsearch_index(const char *index_mem, size_t index_size,
 #include <sys/stat.h>
 
 int main(int argc, char **argv) {
-  FILE *f = fopen("/usr/ports/INDEX-8", "r");
+  if (argc != 2) {
+    errx(EX_USAGE, "needs ports index file as an argument");
+  }
+  FILE *f = fopen(argv[1], "r");
+  if (!f) {
+    err(EX_NOINPUT, argv[1]);
+  }
   int fd = fileno(f);
   struct stat st;
   fstat(fd, &st);

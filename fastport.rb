@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 
-Index='/usr/ports/INDEX-8'
-
 Libexec_dir='/usr/local/libexec/fastport'
 ENV['PATH'] += ":.:#{Libexec_dir}"
 $LOAD_PATH << '.' << Libexec_dir
@@ -11,9 +9,19 @@ module Enumerable
   def second; drop(1).first end
 end
 
+def guess_index_file
+  (release_info = `uname -r`) =~ /^(\d+)[\.-]/
+  if $1.nil?
+    raise "can't guess release major number from release info: #{release_info}"
+  end
+  index = "/usr/ports/INDEX-" << $1
+  open(index, "r") {}
+  index
+end
 
 def lookup_index pkg_origin
-  $idx_prog ||= open("|bsearch","a+")
+  $index ||= guess_index_file
+  $idx_prog ||= open("|bsearch #{$index}","a+")
   $idx_prog.puts pkg_origin
   $idx_prog.gets
 end
@@ -28,7 +36,7 @@ def portpath_from_indexline x
 end
 
 def test_index
-  open(Index) do |f|
+  open(guess_index_file) do |f|
     while (l = f.gets) do
       pkg_origin = portpath_from_indexline l
       r = lookup_index pkg_origin
@@ -43,7 +51,7 @@ end
 
 def pkg_origin pkg
   open("/var/db/pkg/#{pkg}/+CONTENTS") do |f|
-    xs = []; 
+    xs = []
     5.times {xs << f.read}
     xs
   end \
