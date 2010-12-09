@@ -11,8 +11,16 @@ port path and binary-search the entry in the index file.
 The other implemented mode of operation is to simply return a record
 from ports index for a given port path (using -l switch).
 
-You can find the motivation behind this little piece of code in the
-`idea' file.
+
+Using this tool probably makes sense only for people not using
+portupgrade and wanting something faster than `portmaster -L' to check
+the ports for upgrading.  You can find the motivation behind this
+little piece of code in the `idea' file.
+
+
+Installation:
+
+make install
 
 
 Summary of usage:
