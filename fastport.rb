@@ -71,7 +71,8 @@ def check_pkg pkg
 end
 
 def check_all_pkgs
-  Dir.glob('/var/db/pkg/*').map{|f| File.basename f}.each {|x| check_pkg x}
+  Dir.glob('/var/db/pkg/*-[a-zA-Z0-9]*').
+    map{|f| File.basename f}.each {|x| check_pkg x}
 end
 
 if $0 == __FILE__
