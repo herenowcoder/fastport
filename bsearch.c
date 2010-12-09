@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sysexits.h>
 
 #define D(_format, ...) fprintf(stderr, _format "\n", __VA_ARGS__)
 
@@ -28,7 +29,7 @@ static struct strsub bsearch_loop(long p1, long p2) {
   lowerb = memrchr(mem + p1, '\n', phalf - p1);
   p = lowerb ? lowerb - mem + 1 : p1;
   upperb = memchr(mem + phalf, '\n', memsize - phalf);
-  if (!upperb) exit(2);
+  if (!upperb) exit(EX_DATAERR);
   pn = upperb - mem + 1;
   linesize = pn - p;
   r = comparator(key, mem + p, linesize);
@@ -59,7 +60,7 @@ static struct strsub portpath_from_indexline(const char *s, size_t len)
 static int compare_index_entry(const char *key, const char *entry, size_t len)
 {
   const struct strsub portpath = portpath_from_indexline(entry, len);
-  if (!portpath.s) exit(3);
+  if (!portpath.s) exit(EX_DATAERR);
   char buf[portpath.n+1];
   strncpy(buf, portpath.s, portpath.n);
   buf[portpath.n] = '\0';
