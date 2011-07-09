@@ -18,7 +18,8 @@ the ports for upgrading.  You can find the motivation behind this
 little piece of code in the `idea' file.
 
 
-Installation:
+Installation
+============
 
 make install
 
@@ -33,5 +34,12 @@ fastport -t		This is a regression test and a timing mesasure:
 	 		return result for every index entry found by a binary
 			search. Should effectively give exactly the same output
 			as the ports index file.
+
+
+License
+=======
+This code is released under the terms of the BSD 2-Clause License;
+see the LICENSE file.
+
 
 Enjoy !
